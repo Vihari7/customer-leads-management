@@ -1,13 +1,29 @@
 import express from "express";
 import { PORT, mongoDBURL } from "./config.js";
-import mongoose from "mongoose";   
+import mongoose from "mongoose";  
+import cors from "cors";
+import leadsRoute from "./routes/leadsRoute.js"; 
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const app = express();
 
-app.get('/', (req, res) => {
-    console.log(req);
-    res.send('Hello World!');
+// Middleware for parsing request body
+app.use(express.json());
+app.use(cors());
+
+// Leads Route Middleware
+app.use('/leads', leadsRoute);
+
+
+app.get('/', (request, response) => {
+    console.log(request);
+     return response.status(234).send('Welcome to Cuastomer Leads Management System');
 });
+
+const PORT = process.env.PORT || 5555;
+const mongoDBURL = process.env.MONGO_DB_URL; 
 
 mongoose.connect(mongoDBURL)
     .then(() => {
