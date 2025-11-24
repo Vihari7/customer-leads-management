@@ -16,8 +16,9 @@ import {
 import SaveIcon from '@mui/icons-material/Save';
 
 const CreateLead = () => {
-  // 1. Define State for form fields
+  // Define State for form fields
   const [name, setName] = useState('');
+  const [company, setCompany] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [source, setSource] = useState('');
@@ -26,7 +27,7 @@ const CreateLead = () => {
   
   const navigate = useNavigate();
 
-  // 2. Handle Form Submission
+  // Handle Form Submission
   const handleSaveLead = () => {
     // Simple validation
     if(!name || !email || !source) {
@@ -36,6 +37,7 @@ const CreateLead = () => {
 
     const data = {
       name,
+      company,
       email,
       phone,
       source,
@@ -81,6 +83,14 @@ const CreateLead = () => {
             value={name}
             onChange={(e) => setName(e.target.value)}
           />
+            {/* Company Input */}
+            <TextField 
+            label="Company Name" 
+            variant="outlined" 
+            fullWidth 
+            value={company} 
+            onChange={(e) => setCompany(e.target.value)} 
+            />
 
           {/* Email Input */}
           <TextField 
@@ -125,9 +135,9 @@ const CreateLead = () => {
                 label="Priority"
                 onChange={(e) => setPriority(e.target.value)}
             >
-                <MenuItem value={"Hot"}>Hot (Urgent)</MenuItem>
-                <MenuItem value={"Warm"}>Warm (Interested)</MenuItem>
-                <MenuItem value={"Cold"}>Cold (Just browsing)</MenuItem>
+                <MenuItem value={"Hot"}>Hot </MenuItem>
+                <MenuItem value={"Warm"}>Warm </MenuItem>
+                <MenuItem value={"Cold"}>Cold </MenuItem>
             </Select>
           </FormControl>
 

@@ -14,6 +14,15 @@ const leadSchema = mongoose.Schema(
             type: String,
             required: false, 
         },
+        company: { 
+            type: String, 
+            default: 'N/A' 
+        },
+        role: { 
+            type: String, 
+            default: 'N/A' 
+        },
+
         source: {
             type: String, 
             required: true,
@@ -28,6 +37,23 @@ const leadSchema = mongoose.Schema(
             enum: ['Hot', 'Warm', 'Cold'],
             default: 'Cold',
         },
+         communicationLog: [
+            {
+                type: { type: String }, 
+                note: { type: String },
+                date: { type: Date, default: Date.now }
+            }
+        ],
+        projectHistory: [
+            {
+                projectName: { type: String },
+                status: { type: String },
+                date: { type: String }
+            }
+        ],
+         attachedDocuments: [
+            { name: String, link: String }
+        ]
     },
     {
         timestamps: true, 
