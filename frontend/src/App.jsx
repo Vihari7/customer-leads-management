@@ -1,16 +1,18 @@
 import React from 'react';
 import { Button } from '@mui/material';
-
+import { Routes, Route } from 'react-router-dom';
+import Dashboard from './pages/Dashboard';
+import CreateLead from './pages/CreateLead';
+import ShowLead from './pages/ShowLead';
+import EditLead from './pages/EditLead';
 const App = () => {
   return (
-    <div className='bg-gray-100 h-screen p-10'>
-      <h1 className='text-3xl font-bold text-blue-600 mb-5'>
-        Setup Successful!
-      </h1>
-      <Button variant="contained" color="primary">
-        Test Button
-      </Button>
-    </div>
+    <Routes>
+      <Route path='/' element={<Dashboard />} />
+      <Route path='/leads/create' element={<CreateLead />} />
+      <Route path='/leads/details/:id' element={<ShowLead />} />
+      <Route path='/leads/edit/:id' element={<EditLead />} />
+    </Routes>
   );
 };
 
