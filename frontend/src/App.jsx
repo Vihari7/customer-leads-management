@@ -5,7 +5,7 @@ import Dashboard from './pages/Dashboard';
 import CreateLead from './pages/CreateLead';
 import ShowLead from './pages/ShowLead';
 import EditLead from './pages/EditLead';
-import DeleteLead from './pages/DeleteLead';
+
 
 const App = () => {
   return (
@@ -14,7 +14,6 @@ const App = () => {
       <Route path='/leads/create' element={<CreateLead />} />
       <Route path='/leads/details/:id' element={<ShowLead />} />
       <Route path='/leads/edit/:id' element={<EditLead />} />
-      <Route path='/leads/delete/:id' element={<DeleteLead />} />
     </Routes>
   );
 };

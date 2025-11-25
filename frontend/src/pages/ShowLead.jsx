@@ -1,19 +1,29 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { useParams } from 'react-router-dom';
-import BackButton from '../components/BackButton';
+import { useParams, Link } from 'react-router-dom';
 import Spinner from '../components/Spinner';
 import { 
-    Paper, Typography, Divider, Chip, Grid, Box, Tab, Tabs, 
-    List, ListItem, ListItemText, ListItemIcon, TextField, Button, Select, MenuItem 
+    Typography, Paper, Box, Chip, Button, Divider,
+    Tabs, Tab, List, ListItem, ListItemText, ListItemIcon,
+    TextField, Select, MenuItem, Avatar, Stack, Card, CardContent,
+    Container, Grid
 } from '@mui/material';
-import { Phone, Email, Business, Note, Description, Send, Link as LinkIcon } from '@mui/icons-material';
+import { 
+    ArrowBack, Email, Phone, Business, Work, 
+    Flag, Source, NoteAdd, Description, 
+    Link as LinkIcon, Person, Download, CalendarMonth,
+    Edit
+} from '@mui/icons-material';
 
 function CustomTabPanel(props) {
   const { children, value, index, ...other } = props;
   return (
-    <div hidden={value !== index} {...other} className='p-4'>
-      {value === index && <Box>{children}</Box>}
+    <div role="tabpanel" hidden={value !== index} {...other}>
+      {value === index && (
+        <Box sx={{ p: 4, bgcolor: 'white', border: '1px solid #e2e8f0', borderTop: 0, borderRadius: '0 0 12px 12px', minHeight: '400px' }}>
+          {children}
+        </Box>
+      )}
     </div>
   );
 }
@@ -23,16 +33,15 @@ const ShowLead = () => {
   const [loading, setLoading] = useState(false);
   const [tabValue, setTabValue] = useState(0);
   const { id } = useParams();
-
-  // State for New Log
+    
   const [logType, setLogType] = useState('Call');
   const [logNote, setLogNote] = useState('');
-
-  // State for New Document
   const [docName, setDocName] = useState('');
   const [docLink, setDocLink] = useState('');
 
-  // 1. Helper function to refresh data
+  const [taskNote, setTaskNote] = useState('');
+  const [taskDate, setTaskDate] = useState('');
+
   const fetchLead = () => {
     setLoading(true);
     axios.get(`http://localhost:5555/leads/${id}`)
@@ -48,172 +57,312 @@ const ShowLead = () => {
 
   useEffect(() => {
     fetchLead();
-  }, []);
+  }, [id]);
 
-  const handleTabChange = (event, newValue) => {
-    setTabValue(newValue);
-  };
+  const handleTabChange = (event, newValue) => setTabValue(newValue);
 
-  // 2. Function to Add Log
   const handleAddLog = () => {
     if(!logNote) return alert("Please write a note");
-    
     axios.post(`http://localhost:5555/leads/${id}/log`, { type: logType, note: logNote })
-        .then(() => {
-            setLogNote(''); // Clear input
-            fetchLead(); // Refresh data
-        })
-        .catch((err) => alert("Error adding log"));
+      .then(() => { setLogNote(''); fetchLead(); })
+      .catch(() => alert("Error adding log"));
   };
 
-  // 3. Function to Add Document
   const handleAddDoc = () => {
     if(!docName || !docLink) return alert("Please fill both fields");
-
     axios.post(`http://localhost:5555/leads/${id}/document`, { name: docName, link: docLink })
-        .then(() => {
-            setDocName('');
-            setDocLink('');
-            fetchLead();
-        })
-        .catch((err) => alert("Error adding document"));
+      .then(() => { setDocName(''); setDocLink(''); fetchLead(); })
+      .catch(() => alert("Error adding document"));
+  };
+
+  const handleSetReminder = () => {
+    if(!taskDate) return alert("Please select a date");
+    axios.put(`http://localhost:5555/leads/${id}`, { ...lead, nextFollowUp: taskDate })
+    .then(() => {
+        const noteText = taskNote ? `Scheduled: ${taskNote}` : 'Follow-up scheduled';
+        return axios.post(`http://localhost:5555/leads/${id}/log`, { type: 'Task Set', note: `${noteText} for ${taskDate}` });
+    }).then(() => {
+        setTaskNote(''); setTaskDate(''); fetchLead(); alert("Reminder Set!");
+    }).catch((err) => console.log(err));
+  };
+
+   const getStatusColor = (status) => {
+    switch (status) {
+      case 'New': return 'info';
+      case 'Contacted': return 'warning';
+      case 'Proposal Sent': return 'secondary';
+      case 'Negotiation': return 'primary';
+      case 'Converted': return 'success';
+      case 'Lost': return 'error';
+      default: return 'default';
+    }
+  };
+
+  const formatDate = (dateString) => {
+    if (!dateString) return 'Not Set';
+    return new Date(dateString).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
   };
 
   if (loading) return <Spinner />;
 
   return (
-    <div className='p-4 bg-gray-50 min-h-screen'>
-      <BackButton />
-      
-      <div className='max-w-4xl mx-auto mt-4'>
-        <Paper elevation={2} className='p-6 mb-6 flex justify-between items-center border-l-8 border-blue-600'>
-            <div>
-                <Typography variant="h4" className='font-bold'>{lead.name}</Typography>
-                <div className='flex items-center gap-2 text-gray-600 mt-1'>
-                    <Business fontSize="small" />
-                    <Typography variant="subtitle1">{lead.company || "No Company Info"}</Typography>
-                </div>
-            </div>
-            <div className='flex flex-col items-end gap-2'>
-                <Chip label={lead.status} color="primary" />
-                <Typography variant="caption" className='text-gray-400'>ID: {lead._id}</Typography>
-            </div>
-        </Paper>
+    <Box sx={{ minHeight: '100vh', bgcolor: '#f8fafc', pb: 8 }}>
+      <Container maxWidth="lg" sx={{ pt: 4 }}>
 
-        <Paper elevation={3}>
-            <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-                <Tabs value={tabValue} onChange={handleTabChange}>
-                    <Tab label="Overview" />
-                    <Tab label="Communication Log" />
-                    <Tab label="Documents" />
-                </Tabs>
-            </Box>
+        <Card elevation={0} sx={{ borderRadius: '16px', border: '1px solid #e2e8f0', mb: 4, overflow: 'visible' }}>
+            <CardContent sx={{ p: 4 }}>
+                <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" alignItems="flex-start" spacing={3}>
+                    
+                    {/* Identity Section */}
+                    <Stack direction="row" spacing={3} alignItems="center">
+                        <Avatar 
+                            sx={{ 
+                                width: 88, height: 88, 
+                                bgcolor: '#eff6ff', color: '#2563eb', 
+                                fontSize: '2.5rem', fontWeight: 'bold',
+                                border: '1px solid #bfdbfe'
+                            }}
+                        >
+                            {lead.name ? lead.name.charAt(0).toUpperCase() : <Person />}
+                        </Avatar>
+                        
+                        <Box>
+                            <Typography variant="h4" sx={{ fontWeight: 800, color: '#0f172a', mb: 0.5 }}>
+                                {lead.name}
+                            </Typography>
+                            <Stack direction="row" spacing={1} alignItems="center" sx={{ color: '#64748b' }}>
+                                <Work fontSize="small" sx={{ fontSize: 18 }} />
+                                <Typography variant="body1" fontWeight="500">
+                                    {lead.jobTitle || 'No Job Title'}
+                                </Typography>
+                                <Typography sx={{ mx: 1, color: '#cbd5e1' }}>|</Typography>
+                                <Business fontSize="small" sx={{ fontSize: 18 }} />
+                                <Typography variant="body1" fontWeight="500">
+                                    {lead.company || 'No Company'}
+                                </Typography>
+                            </Stack>
+                        </Box>
+                    </Stack>
+                    {/* Action Buttons & Status */}
+                    <Stack direction="column" alignItems={{ xs: 'flex-start', md: 'flex-end' }} spacing={2}>
+                         <Link to={`/leads/edit/${lead._id}`} style={{ textDecoration: 'none' }}>
+                            <Button variant="outlined" startIcon={<Edit />} size="small" sx={{ borderRadius: '8px', textTransform: 'none', borderColor: '#cbd5e1', color: '#475569' }}>
+                                Edit Profile
+                            </Button>
+                         </Link>
+                         
+                         <Stack direction="row" spacing={1}>
+                            <Chip 
+                                label={lead.priority} 
+                                icon={<Flag style={{ fontSize: 16 }} />}
+                                size="small"
+                                sx={{ 
+                                    fontWeight: 'bold', 
+                                    bgcolor: lead.priority === 'Hot' ? '#fee2e2' : '#f1f5f9',
+                                    color: lead.priority === 'Hot' ? '#ef4444' : '#64748b',
+                                    border: '1px solid',
+                                    borderColor: lead.priority === 'Hot' ? '#fecaca' : '#e2e8f0'
+                                }} 
+                            />
+                            <Chip 
+                                label={lead.status} 
+                                color={getStatusColor(lead.status)} 
+                                size="small"
+                                sx={{ fontWeight: 'bold', borderRadius: '6px' }}
+                            />
+                         </Stack>
+                    </Stack>
+                </Stack>
 
-            {/* TAB 0: OVERVIEW */}
+                <Divider sx={{ my: 3, borderColor: '#f1f5f9' }} />
+
+                {/*  Contact details*/}
+                <Stack 
+                    direction={{ xs: 'column', sm: 'row' }} 
+                    divider={<Divider orientation="vertical" flexItem sx={{ borderColor: '#e2e8f0', display: { xs: 'none', sm: 'block' } }} />}
+                    spacing={{ xs: 2, sm: 4 }}
+                >
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                        <Email sx={{ color: '#94a3b8', fontSize: 20 }} />
+                        <Box>
+                            <Typography variant="caption" display="block" sx={{ color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase' }}>Email</Typography>
+                            <Typography variant="body2" fontWeight="600" color="#334155">{lead.email}</Typography>
+                        </Box>
+                    </Box>
+
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                        <Phone sx={{ color: '#94a3b8', fontSize: 20 }} />
+                        <Box>
+                            <Typography variant="caption" display="block" sx={{ color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase' }}>Phone</Typography>
+                            <Typography variant="body2" fontWeight="600" color="#334155">{lead.phone || 'N/A'}</Typography>
+                        </Box>
+                    </Box>
+
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                        <Source sx={{ color: '#94a3b8', fontSize: 20 }} />
+                        <Box>
+                            <Typography variant="caption" display="block" sx={{ color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase' }}>Source</Typography>
+                            <Typography variant="body2" fontWeight="600" color="#334155">{lead.source}</Typography>
+                        </Box>
+                    </Box>
+
+                    {/* Follow Up */}
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                        <CalendarMonth sx={{ color: '#3b82f6', fontSize: 20 }} />
+                        <Box>
+                            <Typography variant="caption" display="block" sx={{ color: '#3b82f6', fontWeight: 700, textTransform: 'uppercase' }}>Next Follow Up</Typography>
+                            <Typography variant="body2" fontWeight="700" color="#1e293b">{formatDate(lead.nextFollowUp)}</Typography>
+                        </Box>
+                    </Box>
+                </Stack>
+
+            </CardContent>
+        </Card>
+
+        {/* Tabs */}
+        <Box>
+            <Tabs 
+                value={tabValue} 
+                onChange={handleTabChange}
+                sx={{ 
+                    '& .MuiTabs-indicator': { display: 'none' }, 
+                    minHeight: '48px',
+                    '& .MuiTab-root': {
+                        textTransform: 'none',
+                        fontWeight: 'bold',
+                        color: '#64748b',
+                        mr: 0.5,
+                        borderRadius: '8px 8px 0 0',
+                        border: '1px solid transparent',
+                        '&.Mui-selected': {
+                            color: '#0f172a',
+                            bgcolor: 'white',
+                            borderColor: '#e2e8f0',
+                            borderBottomColor: 'white'
+                        }
+                    }
+                }}
+            >
+                <Tab label="Overview" disableRipple />
+                <Tab label={`Activity Log (${lead.communicationLog?.length || 0})`} disableRipple />
+                <Tab label={`Documents (${lead.attachedDocuments?.length || 0})`} disableRipple />
+                <Tab label="Follow-up Tasks" disableRipple />
+            </Tabs>
+
+            {/* OVERVIEW */}
             <CustomTabPanel value={tabValue} index={0}>
-                <Grid container spacing={3}>
-                    <Grid item xs={6}>
-                        <Typography variant="subtitle2" color="textSecondary">Email</Typography>
-                        <div className='flex items-center gap-2'><Email fontSize="small" className='text-blue-500'/><Typography>{lead.email}</Typography></div>
+                <Grid container spacing={4}>
+                    <Grid item xs={12} md={6}>
+                        <Typography variant="h6" sx={{ fontSize: '1rem', fontWeight: 700, color: '#334155', mb: 2 }}>
+                            Initial Lead Notes
+                        </Typography>
+                        <Paper elevation={0} sx={{ p: 3, bgcolor: '#fffbeb', border: '1px solid #fef3c7', borderRadius: 2, minHeight: '160px' }}>
+                            <Typography variant="body2" sx={{ color: '#451a03', lineHeight: 1.6 }}>
+                                {lead.notes ? lead.notes : <span style={{ fontStyle: 'italic', color: '#9ca3af' }}>No notes added.</span>}
+                            </Typography>
+                        </Paper>
                     </Grid>
-                    <Grid item xs={6}>
-                        <Typography variant="subtitle2" color="textSecondary">Phone</Typography>
-                        <div className='flex items-center gap-2'><Phone fontSize="small" className='text-green-500'/><Typography>{lead.phone || "N/A"}</Typography></div>
-                    </Grid>
-                    <Grid item xs={6}>
-                        <Typography variant="subtitle2" color="textSecondary">Source</Typography>
-                        <Typography>{lead.source}</Typography>
-                    </Grid>
-                    <Grid item xs={6}>
-                        <Typography variant="subtitle2" color="textSecondary">Priority</Typography>
-                        <Typography className={lead.priority === 'Hot' ? 'text-red-600 font-bold' : ''}>{lead.priority}</Typography>
+
+                    {/* Classification Details */}
+                    <Grid item xs={12} md={6}>
+                        <Typography variant="h6" sx={{ fontSize: '1rem', fontWeight: 700, color: '#334155', mb: 2 }}>
+                            Classification
+                        </Typography>
+                        <Stack spacing={2}>
+                            {/* Priority Card */}
+                            <Box sx={{ p: 2.5, border: '1px solid #e2e8f0', borderRadius: 2, bgcolor: '#f8fafc', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <Stack direction="row" spacing={2} alignItems="center">
+                                    <Box sx={{ p: 1, borderRadius: '50%', bgcolor: lead.priority === 'Hot' ? '#fee2e2' : '#e0f2fe', color: lead.priority === 'Hot' ? '#ef4444' : '#0ea5e9' }}>
+                                        <Flag fontSize="small"/>
+                                    </Box>
+                                    <Typography variant="body2" fontWeight="bold" color="#64748b" textTransform="uppercase">Priority Level</Typography>
+                                </Stack>
+                                <Typography variant="h6" fontWeight="bold" color={lead.priority === 'Hot' ? '#ef4444' : '#334155'}>
+                                    {lead.priority}
+                                </Typography>
+                            </Box>
+
+                            {/* Role Card */}
+                            <Box sx={{ p: 2.5, border: '1px solid #e2e8f0', borderRadius: 2, bgcolor: '#f8fafc', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <Stack direction="row" spacing={2} alignItems="center">
+                                    <Box sx={{ p: 1, borderRadius: '50%', bgcolor: '#f3e8ff', color: '#a855f7' }}>
+                                        <Work fontSize="small"/>
+                                    </Box>
+                                    <Typography variant="body2" fontWeight="bold" color="#64748b" textTransform="uppercase">Current Role</Typography>
+                                </Stack>
+                                <Typography variant="h6" fontWeight="bold" color="#334155">
+                                    {lead.jobTitle || 'N/A'}
+                                </Typography>
+                            </Box>
+                        </Stack>
                     </Grid>
                 </Grid>
             </CustomTabPanel>
 
-            {/* TAB 1: COMMUNICATION LOG (Dynamic) */}
+            {/* LOGS */}
             <CustomTabPanel value={tabValue} index={1}>
-                
-                {/* Form to Add Note */}
-                <Box className='mb-4 p-4 bg-gray-50 rounded-lg border'>
-                    <Typography variant="subtitle2" className='mb-2'>Add New Note</Typography>
-                    <div className='flex gap-2'>
-                        <Select size="small" value={logType} onChange={(e) => setLogType(e.target.value)}>
-                            <MenuItem value="Call">Call</MenuItem>
-                            <MenuItem value="Email">Email</MenuItem>
-                            <MenuItem value="Meeting">Meeting</MenuItem>
-                        </Select>
-                        <TextField 
-                            fullWidth size="small" placeholder="Describe what happened..." 
-                            value={logNote} onChange={(e) => setLogNote(e.target.value)}
-                        />
-                        <Button variant="contained" onClick={handleAddLog} endIcon={<Send />}>Add</Button>
-                    </div>
-                </Box>
-
-                <Divider />
-
-                {/* List of Logs */}
-                <List className='max-h-60 overflow-y-auto'>
-                    {lead.communicationLog && lead.communicationLog.length > 0 ? (
-                        lead.communicationLog.slice().reverse().map((log, i) => ( // Reverse to show newest first
-                            <ListItem key={i} divider>
-                                <ListItemIcon><Note /></ListItemIcon>
-                                <ListItemText 
-                                    primary={<span className='font-semibold'>{log.type}</span>}
-                                    secondary={
-                                        <>
-                                            <span className='block text-gray-800'>{log.note}</span>
-                                            <span className='text-xs text-gray-400'>{new Date(log.date).toLocaleString()}</span>
-                                        </>
-                                    } 
-                                />
-                            </ListItem>
-                        ))
-                    ) : (
-                        <Typography className='text-gray-400 italic p-4'>No logs yet.</Typography>
-                    )}
-                </List>
-            </CustomTabPanel>
-
-            {/* TAB 2: DOCUMENTS (Dynamic Links) */}
-            <CustomTabPanel value={tabValue} index={2}>
-                 {/* Form to Add Document */}
-                 <Box className='mb-4 p-4 bg-gray-50 rounded-lg border'>
-                    <Typography variant="subtitle2" className='mb-2'>Attach Document Link</Typography>
-                    <div className='flex gap-2'>
-                        <TextField 
-                            size="small" label="File Name" 
-                            value={docName} onChange={(e) => setDocName(e.target.value)}
-                        />
-                        <TextField 
-                            fullWidth size="small" label="Link (Google Drive/Dropbox)" 
-                            value={docLink} onChange={(e) => setDocLink(e.target.value)}
-                        />
-                        <Button variant="contained" onClick={handleAddDoc}>Add</Button>
-                    </div>
-                </Box>
-
+                <Stack direction="row" spacing={2} mb={4}>
+                     <Select size="small" value={logType} onChange={(e) => setLogType(e.target.value)} sx={{ minWidth: 120 }}>
+                        <MenuItem value="Email">Email</MenuItem>
+                        <MenuItem value="Meeting">Meeting</MenuItem>
+                    </Select>
+                    <TextField fullWidth size="small" placeholder="Add a note..." value={logNote} onChange={(e) => setLogNote(e.target.value)} />
+                    <Button variant="contained" onClick={handleAddLog} sx={{ textTransform: 'none' }}>Add</Button>
+                </Stack>
                 <List>
-                    {lead.attachedDocuments && lead.attachedDocuments.length > 0 ? (
-                        lead.attachedDocuments.map((doc, i) => (
-                            <ListItem key={i} divider component="a" href={doc.link} target="_blank">
-                                <ListItemIcon><Description color="primary"/></ListItemIcon>
-                                <ListItemText 
-                                    primary={doc.name} 
-                                    secondary={<span className='text-blue-500 text-xs flex items-center gap-1'><LinkIcon fontSize="inherit"/> {doc.link}</span>} 
-                                />
-                            </ListItem>
-                        ))
-                    ) : (
-                        <Typography className='text-gray-400 italic p-4'>No documents attached.</Typography>
-                    )}
+                    {lead.communicationLog?.slice().reverse().map((log, i) => (
+                        <ListItem key={i} sx={{ border: '1px solid #f1f5f9', borderRadius: 2, mb: 1.5 }}>
+                            <ListItemIcon><Box p={1} bgcolor="#f1f5f9" borderRadius="50%"><NoteAdd fontSize="small" sx={{ color: '#64748b' }} /></Box></ListItemIcon>
+                            <ListItemText 
+                                primary={<Typography fontWeight="600" fontSize="0.9rem">{log.type}</Typography>}
+                                secondary={<Typography variant="body2" color="textSecondary">{log.note} • {new Date(log.date).toLocaleDateString()}</Typography>}
+                            />
+                        </ListItem>
+                    ))}
                 </List>
             </CustomTabPanel>
 
-        </Paper>
-      </div>
-    </div>
+            {/* DOCUMENTS */}
+            <CustomTabPanel value={tabValue} index={2}>
+                <Stack direction="row" spacing={2} mb={4}>
+                    <TextField size="small" label="Name" value={docName} onChange={(e) => setDocName(e.target.value)} />
+                    <TextField fullWidth size="small" label="Link" value={docLink} onChange={(e) => setDocLink(e.target.value)} />
+                    <Button variant="contained" onClick={handleAddDoc} sx={{ textTransform: 'none' }}>Add</Button>
+                </Stack>
+                <List>
+                    {lead.attachedDocuments?.map((doc, i) => (
+                         <ListItem key={i} component="a" href={doc.link} target="_blank" sx={{ border: '1px solid #f1f5f9', borderRadius: 2, mb: 1.5, '&:hover': { bgcolor: '#f8fafc' } }}>
+                             <ListItemIcon><Description color="error" /></ListItemIcon>
+                             <ListItemText primary={doc.name} secondary={doc.link} />
+                             <Download color="action" fontSize="small" />
+                         </ListItem>
+                    ))}
+                </List>
+            </CustomTabPanel>
+
+            {/* SCHEDULER */}
+            <CustomTabPanel value={tabValue} index={3}>
+                <Box sx={{ maxWidth: 600, mx: 'auto', p: 3, border: '1px solid #e2e8f0', borderRadius: 2 }}>
+                    <Typography fontWeight="bold" color="primary" mb={2}>Schedule Follow-up</Typography>
+                    <Stack direction="row" spacing={2} mb={4}>
+                        <TextField fullWidth size="small" placeholder="Task description..." value={taskNote} onChange={(e) => setTaskNote(e.target.value)} />
+                        <input type="date" style={{ padding: '8px', borderRadius: '4px', border: '1px solid #c4c4c4' }} value={taskDate} onChange={(e) => setTaskDate(e.target.value)} />
+                        <Button variant="contained" onClick={handleSetReminder} sx={{ textTransform: 'none', whiteSpace: 'nowrap' }}>Set Reminder</Button>
+                    </Stack>
+                    
+                    <Typography variant="caption" fontWeight="bold" color="textSecondary" display="block" mb={1}>UPCOMING</Typography>
+                    {lead.nextFollowUp ? (
+                        <Box sx={{ p: 2, bgcolor: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 2, display: 'flex', justifyContent: 'space-between' }}>
+                            <Typography fontWeight="500" color="#0369a1">{taskNote || 'Scheduled Interaction'}</Typography>
+                            <Typography fontWeight="bold" color="#0284c7">{formatDate(lead.nextFollowUp)}</Typography>
+                        </Box>
+                    ) : <Typography fontStyle="italic" color="textSecondary">No tasks scheduled.</Typography>}
+                </Box>
+            </CustomTabPanel>
+
+        </Box>
+      </Container>
+    </Box>
   );
 };
 
