@@ -15,9 +15,13 @@ router.post('/', async (request, response) => {
             name: request.body.name,
             email: request.body.email,
             phone: request.body.phone,
-            company: request.body.company, // Added Company
+            company: request.body.company, 
             source: request.body.source,
             priority: request.body.priority,
+            jobTitle: request.body.jobTitle,
+            status: request.body.status,
+            nextFollowUp: request.body.nextFollowUp,
+            notes: request.body.notes,
         };
         const lead = await Lead.create(newLead);
         return response.status(201).send(lead);

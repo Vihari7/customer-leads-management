@@ -18,7 +18,7 @@ const leadSchema = mongoose.Schema(
             type: String, 
             default: 'N/A' 
         },
-        role: { 
+        jobTitle: { 
             type: String, 
             default: 'N/A' 
         },
@@ -36,6 +36,14 @@ const leadSchema = mongoose.Schema(
             type: String,
             enum: ['Hot', 'Warm', 'Cold'],
             default: 'Cold',
+        },
+        nextFollowUp: {
+            type: Date,
+            required: false,
+        },
+        notes: {
+            type: String,
+            default: '',
         },
          communicationLog: [
             {
