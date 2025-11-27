@@ -44,6 +44,11 @@ const ShowLead = () => {
   const [taskNote, setTaskNote] = useState('');
   const [taskDate, setTaskDate] = useState('');
 
+    //Project History 
+  const [projName, setProjName] = useState('');
+  const [projStatus, setProjStatus] = useState('Active');
+  const [projDate, setProjDate] = useState('');
+
   const fetchLead = () => {
     setLoading(true);
     axios.get(`http://localhost:5555/leads/${id}`)
@@ -115,6 +120,31 @@ const ShowLead = () => {
         fetchLead(); 
         alert("Reminder Set!");
     }).catch((err) => console.log(err));
+  };
+
+    // add Project History
+  const handleAddProject = () => {
+    if (!projName || !projDate) return alert("Please fill in Project Name and Date");
+
+    const newProject = {
+        projectName: projName,
+        status: projStatus,
+        date: projDate
+    };
+
+    const updatedHistory = lead.projectHistory ? [...lead.projectHistory, newProject] : [newProject];
+    const updatedLeadData = { ...lead, projectHistory: updatedHistory };
+
+    axios.put(`http://localhost:5555/leads/${id}`, updatedLeadData)
+        .then(() => {
+            setProjName('');
+            setProjDate('');
+            fetchLead();
+        })
+        .catch((error) => {
+            console.log(error);
+            alert("Error adding project");
+        });
   };
 
   const getStatusColor = (status) => {
@@ -282,6 +312,7 @@ const ShowLead = () => {
                 <Tab label={`Activity Log (${lead.communicationLog?.length || 0})`} disableRipple />
                 <Tab label={`Documents (${lead.attachedDocuments?.length || 0})`} disableRipple />
                 <Tab label="Follow-up Tasks" disableRipple />
+                <Tab label={`Project History (${lead.projectHistory?.length || 0})`} disableRipple />
             </Tabs>
 
             {/* OVERVIEW */}
@@ -329,6 +360,7 @@ const ShowLead = () => {
                         </Stack>
                     </Grid>
                 </Grid>
+                
             </CustomTabPanel>
 
             {/* LOGS */}
@@ -435,6 +467,78 @@ const ShowLead = () => {
                 </Box>
             </CustomTabPanel>
 
+            {/* PROJECT HISTORY */}
+            <CustomTabPanel value={tabValue} index={4}>
+                <Typography variant="h6" sx={{ fontSize: '1rem', fontWeight: 700, color: '#334155', mb: 2 }}>
+                    Project History
+                </Typography>
+
+                <Paper elevation={0} sx={{ p: 2, border: '1px solid #e2e8f0', mb: 4, bgcolor: '#f8fafc' }}>
+                    <Typography variant="caption" fontWeight="bold" color="#94a3b8" mb={2} display="block">ADD PREVIOUS PROJECT</Typography>
+                    <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="center">
+                        <TextField 
+                            label="Project Name" 
+                            size="small" 
+                            fullWidth 
+                            value={projName} 
+                            onChange={(e) => setProjName(e.target.value)} 
+                            sx={{ bgcolor: 'white' }}
+                        />
+                        <Select 
+                            size="small" 
+                            value={projStatus} 
+                            onChange={(e) => setProjStatus(e.target.value)}
+                            sx={{ minWidth: 150, bgcolor: 'white' }}
+                        >
+                            <MenuItem value="Active">Active</MenuItem>
+                            <MenuItem value="Completed">Completed</MenuItem>
+                            <MenuItem value="Cancelled">Cancelled</MenuItem>
+                        </Select>
+                        <TextField 
+                            type="date" 
+                            size="small"
+                            value={projDate}
+                            onChange={(e) => setProjDate(e.target.value)}
+                            sx={{ bgcolor: 'white' }}
+                        />
+                        <Button variant="contained" onClick={handleAddProject} sx={{ textTransform: 'none', minWidth: '100px' }}>
+                            Save
+                        </Button>
+                    </Stack>
+                </Paper>
+
+                <Typography variant="caption" fontWeight="bold" color="#94a3b8" mb={1} display="block">HISTORY LIST</Typography>
+                {lead.projectHistory && lead.projectHistory.length > 0 ? (
+                    <Stack spacing={2}>
+                        {lead.projectHistory.map((proj, index) => (
+                            <Paper key={index} elevation={0} sx={{ p: 2, border: '1px solid #e2e8f0', borderRadius: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <Stack direction="row" spacing={2} alignItems="center">
+                                    <Avatar sx={{ bgcolor: '#f1f5f9', color: '#64748b' }}>
+                                        <History fontSize="small"/>
+                                    </Avatar>
+                                    <Box>
+                                        <Typography variant="subtitle2" fontWeight="bold">{proj.projectName}</Typography>
+                                        <Typography variant="caption" color="text.secondary">Date: {proj.date}</Typography>
+                                    </Box>
+                                </Stack>
+                                <Chip 
+                                    label={proj.status} 
+                                    size="small" 
+                                    sx={{ 
+                                        bgcolor: proj.status === 'Completed' ? '#dcfce7' : (proj.status === 'Cancelled' ? '#fee2e2' : '#e0f2fe'),
+                                        color: proj.status === 'Completed' ? '#166534' : (proj.status === 'Cancelled' ? '#991b1b' : '#0369a1'),
+                                        fontWeight: 'bold'
+                                    }}
+                                />
+                            </Paper>
+                        ))}
+                    </Stack>
+                ) : (
+                    <Box sx={{ p: 4, textAlign: 'center', border: '1px dashed #cbd5e1', borderRadius: 2, color: '#94a3b8' }}>
+                        No project history found.
+                    </Box>
+                )}
+            </CustomTabPanel>
         </Box>
       </Container>
     </Box>
