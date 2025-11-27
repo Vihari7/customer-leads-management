@@ -5,6 +5,7 @@ import leadsRoute from "./routes/leadsRoute.js";
 import dotenv from "dotenv";
 import cron from "node-cron"; 
 import { Lead } from "./models/leadModel.js"; 
+import nodemailer from 'nodemailer';
 
 dotenv.config();
 
@@ -23,6 +24,16 @@ app.get('/', (request, response) => {
      return response.status(234).send('Welcome to Cuastomer Leads Management System');
 });
 
+// --- Email Configuration
+const transporter = nodemailer.createTransport({
+    service: 'gmail', 
+    auth: {
+        user: process.env.EMAIL_USER, 
+        pass: process.env.EMAIL_PASS 
+    }
+});
+
+// --- AUTOMATED SCHEDULER ---
 cron.schedule('* * * * *', async () => {
     console.log('--- Running Daily Follow-up Check ---');
     
@@ -45,6 +56,26 @@ cron.schedule('* * * * *', async () => {
         if (leadsToContact.length > 0) {
             console.log(`Found ${leadsToContact.length} leads to follow up today:`);
             
+            // Prepare email content
+             const leadNames = leadsToContact.map(l => l.name).join(', ');
+
+             if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
+                const mailOptions = {
+                    from: '"CRM System" <system@mycompany.com>',
+                    to: 'admin@mycompany.com', // The admin email
+                    subject: ` Action Required: ${leadsToContact.length} Follow-ups Due Today`,
+                    text: `Hello,\n\nYou have follow-ups scheduled today for the following leads:\n\n${leadNames}\n\nPlease check the dashboard.`
+                };
+
+                transporter.sendMail(mailOptions, (error, info) => {
+                    if (error) console.log("Error sending email:", error);
+                    else console.log("Notification Email sent: " + info.response);
+                });
+            } else {
+                console.log(` Email config missing. Simulated Email: "Follow up with: ${leadNames}"`);
+            }
+
+             //Update Database - Log that a reminder was generated
             leadsToContact.forEach(async (lead) => {
                 console.log(`- REMINDER: Follow up with ${lead.name} (${lead.company})`);
                 
