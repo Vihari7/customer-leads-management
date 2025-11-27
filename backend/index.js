@@ -34,7 +34,7 @@ const transporter = nodemailer.createTransport({
 });
 
 // --- AUTOMATED SCHEDULER ---
-cron.schedule('* * * * *', async () => {
+cron.schedule('0 9 * * *', async () => {
     console.log('--- Running Daily Follow-up Check ---');
     
     const today = new Date();
@@ -61,8 +61,8 @@ cron.schedule('* * * * *', async () => {
 
              if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
                 const mailOptions = {
-                    from: '"CRM System" <system@mycompany.com>',
-                    to: 'admin@mycompany.com', // The admin email
+                    from: '"lush-task-system" <system@mycompany.com>',
+                    to: 'dviha7@gmail.com', // The admin email
                     subject: ` Action Required: ${leadsToContact.length} Follow-ups Due Today`,
                     text: `Hello,\n\nYou have follow-ups scheduled today for the following leads:\n\n${leadNames}\n\nPlease check the dashboard.`
                 };
