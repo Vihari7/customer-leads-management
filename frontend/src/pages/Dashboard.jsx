@@ -126,7 +126,7 @@ const Dashboard = () => {
 
   return (
     <div className='p-8 bg-gray-50 min-h-screen font-sans'>
-      <h1 className='text-3xl font-bold text-slate-800 mb-6'>Dashboard</h1>
+      <h1 className='text-xl font-bold text-slate-800 mb-6'>Dashboard</h1>
 
       {/* Toolbar */}
       <Paper elevation={0} sx={{ padding: '16px', borderRadius: '12px', border: '1px solid #e2e8f0', marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 4 }}>
