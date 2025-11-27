@@ -3,6 +3,8 @@ import mongoose from "mongoose";
 import cors from "cors";
 import leadsRoute from "./routes/leadsRoute.js"; 
 import dotenv from "dotenv";
+import cron from "node-cron"; 
+import { Lead } from "./models/leadModel.js"; 
 
 dotenv.config();
 
@@ -19,6 +21,48 @@ app.use('/leads', leadsRoute);
 app.get('/', (request, response) => {
     console.log(request);
      return response.status(234).send('Welcome to Cuastomer Leads Management System');
+});
+
+cron.schedule('* * * * *', async () => {
+    console.log('--- Running Daily Follow-up Check ---');
+    
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    try {
+        // Find leads where nextFollowUp is >= Today and < Tomorrow
+        const leadsToContact = await Lead.find({
+            nextFollowUp: {
+                $gte: today,
+                $lt: tomorrow
+            },
+            status: { $ne: 'Lost' } // Don't remind for Lost leads
+        });
+
+        if (leadsToContact.length > 0) {
+            console.log(`Found ${leadsToContact.length} leads to follow up today:`);
+            
+            leadsToContact.forEach(async (lead) => {
+                console.log(`- REMINDER: Follow up with ${lead.name} (${lead.company})`);
+                
+                // send email notification to the Admin
+                // Auto-log that a reminder was triggered
+                lead.communicationLog.push({
+                    type: 'System',
+                    note: 'Daily Reminder: Follow-up due today',
+                    date: new Date()
+                });
+                await lead.save();
+            });
+        } else {
+            console.log('No follow-ups scheduled for today.');
+        }
+    } catch (error) {
+        console.error('Scheduler Error:', error);
+    }
 });
 
 const PORT = process.env.PORT || 5555;

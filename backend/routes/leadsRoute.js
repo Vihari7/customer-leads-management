@@ -126,5 +126,47 @@ router.post('/:id/document', async (request, response) => {
         response.status(500).send({ message: error.message });
     }
 });
+router.post('/webhook/capture', async (request, response) => {
+    try {
+        const { name, email, source, phone, company, notes } = request.body;
+
+        // Validation for external data
+        if (!name || !email) {
+            return response.status(400).json({ success: false, message: 'Name and Email are required' });
+        }
+
+        // Check if lead already exists to prevent duplicates
+        const existingLead = await Lead.findOne({ email: email });
+        if (existingLead) {
+            // Update existing lead or just return success
+            return response.status(200).json({ success: true, message: 'Lead already exists', id: existingLead._id });
+        }
+
+        const newLead = {
+            name,
+            email,
+            phone: phone || '',
+            company: company || 'External Lead',
+            source: source || 'Auto-Capture', 
+            status: 'New',                    // Always start as New
+            priority: 'Warm',                 
+            notes: notes || 'Captured via External Webhook',
+            communicationLog: [{
+                type: 'System',
+                note: 'Lead auto-captured from external integration',
+                date: new Date()
+            }]
+        };
+
+        const lead = await Lead.create(newLead);
+        console.log(`[Auto-Capture] New lead created: ${lead.email}`);
+        
+        return response.status(201).json({ success: true, id: lead._id });
+
+    } catch (error) {
+        console.error("Webhook Error:", error.message);
+        response.status(500).json({ success: false, message: error.message });
+    }
+});
 
 export default router;
