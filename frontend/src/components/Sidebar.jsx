@@ -108,7 +108,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
         </DialogTitle>
         <DialogContent sx={{ pt: 3 }}>
             <Typography variant="body2" color="text.secondary" mb={2}>
-                Use this Webhook URL to auto-capture leads from external sources (Facebook Ads, Google Ads, Zapier).
+                Use this Webhook URL to auto-capture leads from external sources (Facebook Ads, Google Ads).
             </Typography>
             
             <Typography variant="caption" fontWeight="bold" color="#64748b">
@@ -130,7 +130,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
                 </IconButton>
             </Paper>
 
-            <Typography variant="caption" fontWeight="bold" color="#64748b">
+            {/* <Typography variant="caption" fontWeight="bold" color="#64748b">
                 REQUIRED JSON FORMAT
             </Typography>
             <div className="bg-slate-900 text-slate-200 p-3 rounded mt-1 text-xs font-mono">
@@ -142,7 +142,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
                     "phone": "optional"
                     }`}
                 </pre>
-            </div>
+            </div> */}
         </DialogContent>
         <DialogActions sx={{ p: 2, borderTop: '1px solid #f1f5f9' }}>
             <Button onClick={() => setOpenIntegration(false)} sx={{ textTransform: 'none', fontWeight: 'bold' }}>
