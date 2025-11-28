@@ -46,7 +46,7 @@ const EditLead = () => {
 
   useEffect(() => {
     setLoading(true);
-    axios.get(`http://localhost:5555/leads/${id}`)
+    axios.get(`https://customer-leads-management.onrender.com/leads/${id}`)
     .then((response) => {
         const data = response.data;
         setName(data.name);
@@ -95,7 +95,7 @@ const EditLead = () => {
     };
 
     axios
-      .put(`http://localhost:5555/leads/${id}`, data)
+      .put(`https://customer-leads-management.onrender.com/leads/${id}`, data)
       .then(() => {
         setLoading(false);
         navigate('/'); 

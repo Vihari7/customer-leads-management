@@ -142,7 +142,7 @@ EMAIL_PASS=your-app-password
 
 The system exposes a Webhook endpoint to accept data from external sources. This can be tested using **Postman**.
 
-**URL:** `POST http://localhost:5555/leads/webhook/capture`  
+**URL:** `POST https://customer-leads-management.onrender.com/leads/webhook/capture`  
 **Body (JSON):**
 ```json
 {

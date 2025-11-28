@@ -16,7 +16,7 @@ import {
 const Sidebar = ({ isOpen, toggleSidebar }) => {
   const location = useLocation();
   const [openIntegration, setOpenIntegration] = useState(false);
-  const webhookUrl = "http://localhost:5555/leads/webhook/capture"; 
+  const webhookUrl = "https://customer-leads-management.onrender.com/leads/webhook/capture"; 
 
   const menuItems = [
     { text: 'Dashboard', icon: <DashboardIcon />, path: '/' },

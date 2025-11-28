@@ -51,7 +51,7 @@ const ShowLead = () => {
 
   const fetchLead = () => {
     setLoading(true);
-    axios.get(`http://localhost:5555/leads/${id}`)
+    axios.get(`https://customer-leads-management.onrender.com/leads/${id}`)
       .then((response) => {
         setLead(response.data);
         setLoading(false);
@@ -73,7 +73,7 @@ const ShowLead = () => {
 
   const handleAddLog = () => {
     if(!logNote) return alert("Please write a note");
-    axios.post(`http://localhost:5555/leads/${id}/log`, { type: logType, note: logNote })
+    axios.post(`https://customer-leads-management.onrender.com/leads/${id}/log`, { type: logType, note: logNote })
       .then(() => { setLogNote(''); fetchLead(); })
       .catch(() => alert("Error adding log"));
   };
@@ -82,14 +82,14 @@ const ShowLead = () => {
     if(!window.confirm("Are you sure you want to delete this log?")) return;
     const updatedLogs = lead.communicationLog.filter(log => log._id !== logId);
     const updatedLeadData = { ...lead, communicationLog: updatedLogs };
-    axios.put(`http://localhost:5555/leads/${id}`, updatedLeadData)
+    axios.put(`https://customer-leads-management.onrender.com/leads/${id}`, updatedLeadData)
         .then(() => fetchLead())
         .catch((error) => alert("Error deleting log"));
   };
 
   const handleAddDoc = () => {
     if(!docName || !docLink) return alert("Please fill both fields");
-    axios.post(`http://localhost:5555/leads/${id}/document`, { name: docName, link: docLink })
+    axios.post(`https://customer-leads-management.onrender.com/leads/${id}/document`, { name: docName, link: docLink })
       .then(() => { setDocName(''); setDocLink(''); fetchLead(); })
       .catch(() => alert("Error adding document"));
   };
@@ -98,7 +98,7 @@ const ShowLead = () => {
     if(!window.confirm("Are you sure you want to delete this document?")) return;
     const updatedDocs = lead.attachedDocuments.filter(doc => doc._id !== docId);
     const updatedLeadData = { ...lead, attachedDocuments: updatedDocs };
-    axios.put(`http://localhost:5555/leads/${id}`, updatedLeadData)
+    axios.put(`https://customer-leads-management.onrender.com/leads/${id}`, updatedLeadData)
         .then(() => fetchLead())
         .catch((error) => alert("Error deleting document"));
   };
@@ -107,10 +107,10 @@ const ShowLead = () => {
     if(!taskDate) return alert("Please select a date");
     if(!taskNote) return alert("Please enter a task description"); 
 
-    axios.put(`http://localhost:5555/leads/${id}`, { ...lead, nextFollowUp: taskDate })
+    axios.put(`https://customer-leads-management.onrender.com/leads/${id}`, { ...lead, nextFollowUp: taskDate })
     .then(() => {
         // Save the task description into the log
-        return axios.post(`http://localhost:5555/leads/${id}/log`, { 
+        return axios.post(`https://customer-leads-management.onrender.com/leads/${id}/log`, { 
             type: 'Task Set', 
             note: `${taskNote} for ${taskDate}` 
         });
@@ -135,7 +135,7 @@ const ShowLead = () => {
     const updatedHistory = lead.projectHistory ? [...lead.projectHistory, newProject] : [newProject];
     const updatedLeadData = { ...lead, projectHistory: updatedHistory };
 
-    axios.put(`http://localhost:5555/leads/${id}`, updatedLeadData)
+    axios.put(`https://customer-leads-management.onrender.com/leads/${id}`, updatedLeadData)
         .then(() => {
             setProjName('');
             setProjDate('');

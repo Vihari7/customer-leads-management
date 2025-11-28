@@ -46,7 +46,7 @@ const Dashboard = () => {
 
   const fetchLeads = () => {
     axios
-      .get('http://localhost:5555/leads')
+      .get('https://customer-leads-management.onrender.com/leads')
       .then((response) => {
         setLeads(response.data.data);
         setFiltered(response.data.data);
@@ -71,7 +71,7 @@ const Dashboard = () => {
   const confirmDelete = () => {
     setLoading(true);
     axios
-      .delete(`http://localhost:5555/leads/${deleteId}`)
+      .delete(`https://customer-leads-management.onrender.com/leads/${deleteId}`)
       .then(() => {
         setLoading(false);
         handleCloseDialog();

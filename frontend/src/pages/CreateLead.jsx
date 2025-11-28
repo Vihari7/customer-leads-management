@@ -66,7 +66,7 @@ const CreateLead = () => {
     };
 
     axios
-      .post('http://localhost:5555/leads', data)
+      .post('https://customer-leads-management.onrender.com/leads', data)
       .then(() => {
         setLoading(false);
         navigate('/'); 
