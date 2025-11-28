@@ -74,7 +74,7 @@ const CreateLead = () => {
       .catch((error) => {
         setLoading(false);
         console.log(error);
-        alert('Error: ${error.response?.data?message || error.message} ');
+        alert('Error: ${error.response?.data?.message || error.message} ');
       });
   };
 
