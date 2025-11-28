@@ -6,6 +6,13 @@ A full-stack application designed to streamline the management of potential cust
 
 ---
 
+## 🌐 Live Demo
+Check out the deployed application:
+
+- **Frontend (Live App):** [Click Here to Open App](https://customer-leads-management-c3kz.vercel.app/)
+- **Backend API:** [Server Status Link](https://customer-leads-management.onrender.com)
+---
+
 ## 📖 Table of Contents
 - [About the Project](#-about-the-project)
 - [Key Features](#-key-features)
