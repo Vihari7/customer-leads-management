@@ -138,7 +138,7 @@ PORT=5555
 MONGO_DB_URL=mongodb+srv://<username>:<password>@cluster.mongodb.net/?appName=Cluster
 
 # Email Settings (Required for Daily Reminders)
-# Note: Use an "App Password" for Gmail, not the login password.
+# Note: Use an "App Password" for Gmail.
 EMAIL_USER=your-email@gmail.com
 EMAIL_PASS=your-app-password
 ```
